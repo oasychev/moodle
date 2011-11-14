@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/question/type/shortanswer/question.php');
  */
 class qtype_shortanswer extends question_type {
     public function extra_question_fields() {
-        return array('question_shortanswer', 'usecase');
+        return array('question_shortanswer', 'answers', 'usecase');
     }
 
     protected function questionid_column_name() {
@@ -124,6 +124,7 @@ class qtype_shortanswer extends question_type {
 
     protected function initialise_question_instance(question_definition $question, $questiondata) {
         parent::initialise_question_instance($question, $questiondata);
+        $question->usecase = $questiondata->options->usecase;
         $this->initialise_question_answers($question, $questiondata);
     }
 

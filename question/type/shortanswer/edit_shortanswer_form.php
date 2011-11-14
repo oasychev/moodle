@@ -59,6 +59,10 @@ class qtype_shortanswer_edit_form extends question_edit_form {
         $question = $this->data_preprocessing_answers($question);
         $question = $this->data_preprocessing_hints($question);
 
+        if (!empty($question->options)) {
+            $question->usecase = $question->options->usecase;
+        }
+
         return $question;
     }
 
