@@ -462,7 +462,19 @@ class question_type {
             $DB->{$function}($question_extension_table, $options);
         }
 
-        // Save the answers, with any extra data.
+    }
+
+    /**
+     * Save the answers, with any extra data.
+     *
+     * Questions that use answers will call it from {@link save_question_options}.
+     * @return object $result->error or $result->notice
+     * @param object $question  This holds the information from the editing form,
+     *      it is not a standard question object.
+     */
+    public function save_question_answers($question) {
+        global $DB;
+
         $context = $question->context;
         $oldanswers = $DB->get_records('question_answers',
                 array('question' => $question->id), 'id ASC');
@@ -539,7 +551,6 @@ class question_type {
             $DB->delete_records('question_answers', array('id' => $oldanswer->id));
         }
     }
-
     /**
      * Returns true is answer with the $key is empty in the question data and should not be saved in DB.
      *
