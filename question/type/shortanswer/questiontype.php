@@ -58,63 +58,50 @@ class qtype_shortanswer extends question_type {
         global $DB;
         $result = new stdClass();
 
-        $context = $question->context;
-
-        $oldanswers = $DB->get_records('question_answers',
-                array('question' => $question->id), 'id ASC');
-
+        // Perform sanity checks on fractional grades.
         $maxfraction = -1;
-
-        // Insert all the new answers.
         foreach ($question->answer as $key => $answerdata) {
-            // Check for, and ignore, completely blank answer from the form.
-            if (trim($answerdata) == '' && $question->fraction[$key] == 0 &&
-                    html_is_blank($question->feedback[$key]['text'])) {
-                continue;
-            }
-
-            // Update an existing answer if possible.
-            $answer = array_shift($oldanswers);
-            if (!$answer) {
-                $answer = new stdClass();
-                $answer->question = $question->id;
-                $answer->answer = '';
-                $answer->feedback = '';
-                $answer->id = $DB->insert_record('question_answers', $answer);
-            }
-
-            $answer->answer   = trim($answerdata);
-            $answer->fraction = $question->fraction[$key];
-            $answer->feedback = $this->import_or_save_files($question->feedback[$key],
-                    $context, 'question', 'answerfeedback', $answer->id);
-            $answer->feedbackformat = $question->feedback[$key]['format'];
-            $DB->update_record('question_answers', $answer);
-
             if ($question->fraction[$key] > $maxfraction) {
                 $maxfraction = $question->fraction[$key];
             }
         }
 
-        $parentresult = parent::save_question_options($question);
-        if ($parentresult !== null) {
-            // Parent function returns null if all is OK.
-            return $parentresult;
-        }
-
-        // Delete any left over old answer records.
-        $fs = get_file_storage();
-        foreach ($oldanswers as $oldanswer) {
-            $fs->delete_area_files($context->id, 'question', 'answerfeedback', $oldanswer->id);
-            $DB->delete_records('question_answers', array('id' => $oldanswer->id));
-        }
-
-        $this->save_hints($question);
-
-        // Perform sanity checks on fractional grades.
         if ($maxfraction != 1) {
-            $result->noticeyesno = get_string('fractionsnomax', 'question', $maxfraction * 100);
+            $result->error = get_string('fractionsnomax', 'question', $maxfraction * 100);
             return $result;
         }
+
+        parent::save_question_options($question);
+
+        $this->save_hints($question);
+    }
+
+    /**
+     * Returns true is answer with the $key is empty in the question data and should not be saved in DB.
+     *
+     * @param object $questiondata This holds the information from the question editing form or import.
+     * @param int $key A key of the answer in question.
+     * @return bool True if answer shouldn't be saved in DB.
+     */
+    protected function is_answer_empty($questiondata, $key) {
+        return trim($questiondata->answer[$key]) == '' && $questiondata->fraction[$key] == 0 &&
+                    html_is_blank($questiondata->feedback[$key]['text']);
+    }
+
+    /**
+     * Change $answer, filling necessary fields for the question_answers table.
+     *
+     * @param stdClass $answer Object to save data.
+     * @param object $questiondata This holds the information from the question editing form or import.
+     * @param int $key A key of the answer in question.
+     * @param $context needed for working with files.
+     */
+    protected function fill_answer_fields($answer, $questiondata, $key, $context) {
+        $answer->answer   = $questiondata->answer[$key];
+        $answer->fraction = $questiondata->fraction[$key];
+        $answer->feedback = $this->import_or_save_files($questiondata->feedback[$key],
+                $context, 'question', 'answerfeedback', $answer->id);
+        $answer->feedbackformat = $questiondata->feedback[$key]['format'];
     }
 
     protected function initialise_question_instance(question_definition $question, $questiondata) {
