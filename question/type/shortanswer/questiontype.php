@@ -104,6 +104,7 @@ class qtype_shortanswer extends question_type {
         $answer->feedback = $this->import_or_save_files($questiondata->feedback[$key],
                 $context, 'question', 'answerfeedback', $answer->id);
         $answer->feedbackformat = $questiondata->feedback[$key]['format'];
+        return $answer;
     }
 
     protected function initialise_question_instance(question_definition $question, $questiondata) {

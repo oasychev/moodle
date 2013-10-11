@@ -509,7 +509,7 @@ class question_type {
                 $answer->id = $DB->insert_record('question_answers', $answer);
             }
 
-            $this->fill_answer_fields($answer, $question, $key, $context);
+            $answer = $this->fill_answer_fields($answer, $question, $key, $context);
             $DB->update_record('question_answers', $answer);
 
             if ($isextraanswerfields) {
@@ -524,12 +524,12 @@ class question_type {
                     $answerextra->answerid = $answer->id;
                     // Avoid looking for correct default for any possible DB field type
                     // by setting real values.
-                    $this->fill_extra_answer_fields($answerextra, $question, $key, $context, $extraanswerfields);
+                    $answerextra = $this->fill_extra_answer_fields($answerextra, $question, $key, $context, $extraanswerfields);
                     $answerextra->id = $DB->insert_record($extraanswertable, $answerextra);
                 } else {
                     // Update answerid, as record may be reused from another answer.
                     $answerextra->answerid = $answer->id;
-                    $this->fill_extra_answer_fields($answerextra, $question, $key, $context, $extraanswerfields);
+                    $answerextra = $this->fill_extra_answer_fields($answerextra, $question, $key, $context, $extraanswerfields);
                     $DB->update_record($extraanswertable, $answerextra);
                 }
             }
@@ -565,17 +565,18 @@ class question_type {
     }
 
     /**
-     * Change $answer, filling necessary fields for the question_answers table.
+     * Return $answer, filling necessary fields for the question_answers table.
      *
      * The questions using question_answers table will want to overload this.
      * @param stdClass $answer Object to save data.
      * @param object $questiondata This holds the information from the question editing form or import.
      * @param int $key A key of the answer in question.
      * @param $context needed for working with files.
+     * @return $answer answer with filled data.
      */
     protected function fill_answer_fields($answer, $questiondata, $key, $context) {
         // Not doing anything to ensure each question type with answers overload this.
-        return;
+        return $answer;
     }
 
     /**
@@ -593,17 +594,18 @@ class question_type {
     }
 
     /**
-     * Change $answerextra, filling necessary fields for the extra answer fields table.
+     * Return $answerextra, filling necessary fields for the extra answer fields table.
      *
      * The questions may want to overload it to save files or do other data processing.
      * @param stdClass $answerextra Object to save data.
      * @param object $questiondata This holds the information from the question editing form or import.
      * @param int $key A key of the answer in question.
      * @param $context needed for working with files.
+     * @return $answer answerextra with filled data.
      */
     protected function fill_extra_answer_fields($answerextra, $questiondata, $key, $context, $extraanswerfields) {
         // No extra answer data in base class.
-        return;
+        return $answerextra;
     }
 
     public function save_hints($formdata, $withparts = false) {
