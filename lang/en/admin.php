@@ -601,6 +601,7 @@ $string['includemoduleuserdata'] = 'Include module user data';
 $string['incompatibleblocks'] = 'Incompatible blocks';
 $string['installhijacked'] = 'Installation must be finished from the original IP address, sorry.';
 $string['installsessionerror'] = 'Can not initialise PHP session, please verify that your browser accepts cookies.';
+$string['installplugin'] = 'Install this plugin';
 $string['intlrecommended'] = 'Intl extension is used to improve internationalization support, such as locale aware sorting.';
 $string['invalidsection'] = 'Invalid section.';
 $string['invaliduserchangeme'] = 'Username "changeme" is reserved -- you cannot create an account with it.';
