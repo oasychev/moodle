@@ -1013,9 +1013,24 @@ class core_admin_renderer extends plugin_renderer_base {
         foreach ($plugin->get_other_required_plugins() as $component => $requiredversion) {
             $ok = true;
             $otherplugin = $pluginman->get_plugin_info($component);
+            $actionwidget = '';
 
             if (is_null($otherplugin)) {
                 $ok = false;
+
+                // Add a button to install plugin.
+                $installaddonrequest = array(
+                    'name' => $component,       // No human readable plugin name available there, sorry.
+                    'component' => $component,
+                    'version' => $requiredversion,
+                );
+                $jsonized = json_encode($installaddonrequest);
+                $encoded = base64_encode($jsonized);
+                $url = new moodle_url('/admin/tool/installaddon/index.php', array(
+                    'installaddonrequest' => $encoded,
+                    'confirm' => 0));
+                $actionbutton = new single_button($url, get_string('installplugin', 'core_admin'), 'get');
+                $actionwidget = $this->output->render($actionbutton);
             } else if ($requiredversion != ANY_VERSION and $otherplugin->versiondisk < $requiredversion) {
                 $ok = false;
             }
@@ -1035,7 +1050,7 @@ class core_admin_renderer extends plugin_renderer_base {
             $componenturl = html_writer::tag('a', $component, array('href' => $componenturl->out()));
             $requires[] = html_writer::tag('li',
                     get_string($str, 'core_plugin',
-                            array('component' => $componenturl, 'version' => $requiredversion)),
+                            array('component' => $componenturl, 'version' => $requiredversion)) . $actionwidget,
                     array('class' => $class));
         }
 
